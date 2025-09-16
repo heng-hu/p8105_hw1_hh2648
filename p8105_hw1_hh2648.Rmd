@@ -31,9 +31,9 @@ day_max <- max(early_january_weather$day)
 #### a. Description of the dataset:
 This dataset has ``r ncol(early_january_weather)`` variables and ``r nrow(early_january_weather)`` observations. The variables' names are ``r var_nms``.The `origin` variable indicates the data was collected from ``r origin``, which is Newark Liberty International Airport. According to `year`, `month`, and `day` variables, we know that the observations were collected from `Jan `r day_min`, `r yr`` to `Jan `r day_max`, `r yr``. 
 
-`visib` is visibility in miles. It is a critical parameter for airport operations. The mean visibility in this dataset is ``r round(mean(early_january_weather$visib), 1)`` miles, with a standard deviation of ``r round(sd(early_january_weather$visib), 1)`` miles.
+`visib` is the visibility in miles. It is a critical parameter for airport operations. The mean visibility in this dataset is ``r round(mean(early_january_weather$visib), 1)`` miles, with a standard deviation of ``r round(sd(early_january_weather$visib), 1)`` miles.
 
-`wind_speed` is the speed of wind in MPH. It is another critical parameter for airport operations. The mean wind speed in this dataset is ``r round(mean(early_january_weather$wind_speed), 1)`` miles, with a standard deviation of ``r round(sd(early_january_weather$wind_speed), 1)`` miles.
+`wind_speed` is the speed of wind in MPH. It is another critical parameter for airport operations. The mean wind speed in this dataset is ``r round(mean(early_january_weather$wind_speed), 1)`` MPH, with a standard deviation of ``r round(sd(early_january_weather$wind_speed), 1)`` MPH.
 
 In winter, temperature is also important for the airport. The mean temperature in early Januray, `r yr` is ``r round(sd(early_january_weather$temp), 1)`` F.
 
@@ -70,3 +70,41 @@ ggsave("EWR_early_jan_temp.png", p)
 p
 ```
 
+
+## Problem 2
+
+```{r}
+# Set a seed to ensure consistent results.
+set.seed(2648)
+
+# Create a dataset with numeric, logic, character, and factor variables
+dt <- tibble(
+  vec_num = rnorm(10),
+  vec_log = vec_num > 0,
+  vec_char = ifelse(vec_num > 0, "Positive", "Not positive"),
+  vec_fact = factor(case_when(
+    vec_num > quantile(vec_num, 0.75) ~ "High",
+    vec_num < quantile(vec_num, 0.25) ~ "Low",
+    .default = "Normal"
+  ),
+  levels = c("Low", "Normal", "High"),
+  ordered = TRUE)
+)
+
+dt
+```
+
+We can use `mean()` to calculate numeric and logic variables. The mean of numeric variable `vec_num` is ``r mean(dt$vec_num)``, and the mean of logic variable `vec_log` is ``r mean(dt$vec_log)``. When you try to calculate the mean of character and factor variables, a warning message will be displayed and `mean()` will return ``r mean(dt$vec_char)``.
+
+```{r eval = FALSE}
+# Convert logic, character, and factor variables to numeric
+log2num <- as.numeric(dt$vec_log)
+char2num <- as.numeric(dt$vec_char)
+fact2num <- as.numeric(dt$vec_fact)
+```
+
+Logic variables can be converted to numeric variables smoothly. That's why we can apply `mean()` directly to logic variables. 
+
+Typically, character variables are not convertible to numeric types. As a result, all elements will be coerced to `NA`, except those that are valid numeric representations. For example, `c("1", "a")` will be converted to ``r paste0("c(", paste(as.numeric(c("1", "a")), collapse = ", "), ")")``.
+
+Factor variables can be converted to numeric because their underlying values are stored as integers. However, `mean()` cannot be applied to factor variables directly, since those integers represent categorical levels rather than actual numeric values.
