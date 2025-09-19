@@ -1,5 +1,5 @@
 ---
-title: "Simple document"
+title: "P8105 Data Science I - Homework 1"
 author: "Heng Hu (hh2648)"
 date: 2025-09-14
 output: github_document
@@ -26,16 +26,22 @@ origin <- unique(early_january_weather$origin)
 yr <- unique(early_january_weather$year)
 day_min <- min(early_january_weather$day)
 day_max <- max(early_january_weather$day)
+
+# Check whether the time interval between all consecutive records is one hour
+not_1hr_obs <- early_january_weather |> 
+  mutate(diff_hr = as.numeric(difftime(time_hour, lag(time_hour), units = "hours"))) |> 
+  filter(row_number() != 1 & (is.na(diff_hr) | diff_hr != 1))
 ```
 
 #### a. Description of the dataset:
-This dataset has ``r ncol(early_january_weather)`` variables and ``r nrow(early_january_weather)`` observations. The variables' names are ``r var_nms``.The `origin` variable indicates the data was collected from ``r origin``, which is Newark Liberty International Airport. According to `year`, `month`, and `day` variables, we know that the observations were collected from `Jan `r day_min`, `r yr`` to `Jan `r day_max`, `r yr``. 
+This dataset has ``r ncol(early_january_weather)`` variables and ``r nrow(early_january_weather)`` observations. The variables' names are ``r var_nms``.The `origin` variable indicates the data was collected from ``r origin``, which is Newark Liberty International Airport. According to `year`, `month`, and `day` variables, we know that the observations were collected from `Jan `r day_min`, `r yr`` to `Jan `r day_max`, `r yr``. At first glance at the values of `hour`, the records appear to be collected 
+hourly. However, after calculating the time intervals between all consecutive records, ``r nrow(not_1hr_obs)`` record was found not to have been collected one hour after the previous entry.
 
-`visib` is the visibility in miles. It is a critical parameter for airport operations. The mean visibility in this dataset is ``r round(mean(early_january_weather$visib), 1)`` miles, with a standard deviation of ``r round(sd(early_january_weather$visib), 1)`` miles.
+`visib` is the visibility in miles. It is a critical parameter for airport operations. The mean visibility in this dataset is ``r sprintf("%.1f", mean(early_january_weather$visib))`` miles, with a standard deviation of ``r sprintf("%.1f", sd(early_january_weather$visib))`` miles.
 
-`wind_speed` is the speed of wind in MPH. It is another critical parameter for airport operations. The mean wind speed in this dataset is ``r round(mean(early_january_weather$wind_speed), 1)`` MPH, with a standard deviation of ``r round(sd(early_january_weather$wind_speed), 1)`` MPH.
+`wind_speed` is the speed of wind in miles per hour (mph). It is another critical parameter for airport operations. The mean wind speed in this dataset is ``r sprintf("%.1f", mean(early_january_weather$wind_speed))`` mph, with a standard deviation of ``r sprintf("%.1f", sd(early_january_weather$wind_speed))`` mph.
 
-In winter, temperature is also important for the airport. The mean temperature in early Januray, `r yr` is ``r round(sd(early_january_weather$temp), 1)`` F.
+In winter, temperature is also important for the airport. The mean temperature in early Januray, `r yr` is ``r sprintf("%.1f", sd(early_january_weather$temp))`` °F.
 
 #### b. Make a scatter plot of temp (y) vs time_hour (x):
 ```{r message = FALSE}
@@ -51,8 +57,8 @@ p <- early_january_weather |>
   geom_point() +
   theme_minimal() +
   labs(title = "EWR Temperature — Early January 2013",
-       y = "Temperature (F)",
-       col = "Relative humidity (%)") +
+       y = "Temperature (\u00B0F)",
+       col = "Relative\nhumidity (%)") +
   scale_x_datetime(breaks = x_breaks,
                    labels = function(x) format(x, "%b-%d")) +
   theme_minimal() +
@@ -63,10 +69,12 @@ p <- early_january_weather |>
         axis.title.y = element_text(size = 12),
         axis.line.x = element_line(color = "black"),
         axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 12))
+        axis.text.x = element_text(size = 12),
+        legend.title = element_text(margin = margin(0,0,10,0))
+  )
 
 # Save the plot
-ggsave("EWR_early_jan_temp.png", p)
+ggsave("EWR_early_jan_temp.png", p, width = 8, height = 6, dpi = 600, bg = "white")
 p
 ```
 
@@ -74,7 +82,7 @@ p
 ## Problem 2
 
 ```{r}
-# Set a seed to ensure consistent results.
+# Set a seed to ensure consistent results
 set.seed(2648)
 
 # Create a dataset with numeric, logic, character, and factor variables
